@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+# Created by Simon Kohlmeyer <simon.kohlmeyer@googlemail.com> in 2011
+# Public domain
+
+$standard="Zend"
+$debug = false
+
+################################################
+require "csv"
+
+$changed_lines = {}
+$relative_names = {}
+
+def has_changed(file, line)
+    changes = $changed_lines[file]
+    return false unless changes
+
+    changes.each do |c|
+        return true if c[0] <= line and c[1] >= line
+        break if c[0] > line
+    end
+    false
+end
+
+# farm the changes from git
+current_file = nil
+`git diff --color=never --staged -U0`.scan( /^(\+\+\+ b\/(.*))|(@@ -\S+ \+(\d+)(,(\d+))?)/ ) do |res|
+    file     = res[1]
+    from     = res[3].to_i
+    to       = res[5].nil? ? from : res[5].to_i
+    if not file.nil?
+        abs_file = File.expand_path file
+        # start of a new file
+        $relative_names[abs_file] = file
+        current_file = abs_file
+        $changed_lines[abs_file] = []
+        puts "Starting with \"#{file}\"" if $debug
+    elsif
+        # region in this file
+        $changed_lines[current_file] << [from, to]
+        puts "  #{from} => #{to}" if $debug
+    end
+end
+
+# call phpcs for the report
+report = `phpcs --report=csv --standard=#{$standard} #{$changed_lines.keys.join ' '}`
+errors = false
+CSV.parse(report).drop(1).each do |row|
+    file    = File.expand_path row[0]
+    line    = row[1].to_i
+    puts "style violation in #{file}:#{line}" if $debug
+    next unless has_changed(file, line)
+    puts "it's new" if $debug
+    message = row[4]
+    puts "#{$relative_names[file]}:#{line} #{message}"
+    errors = true
+end
+exit 1 if errors
