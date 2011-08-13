@@ -1,0 +1,5 @@
+A git pre-commit hook that checks modified or added content for style violations while ignoring violations in unmodified code.
+
+Created by Simon Kohlmeyer <simon.kohlmeyer@googlemail.com> in 2011
+Public Domain.
+
