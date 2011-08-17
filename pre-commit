@@ -46,6 +46,7 @@ exit 0 if $changed_lines.empty?
 
 # call phpcs for the report
 report = `phpcs --report=csv --standard=#{$standard} #{$changed_lines.keys.join ' '}`
+puts "calling `phpcs --report=csv --standard=#{$standard} #{$changed_lines.keys.join ' '}`" if $debug
 errors = false
 CSV.parse(report).drop(1).each do |row|
     file    = File.expand_path row[0]
