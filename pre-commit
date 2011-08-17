@@ -42,6 +42,8 @@ current_file = nil
     end
 end
 
+exit 0 if $changed_lines.empty?
+
 # call phpcs for the report
 report = `phpcs --report=csv --standard=#{$standard} #{$changed_lines.keys.join ' '}`
 errors = false
