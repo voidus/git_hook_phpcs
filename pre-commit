@@ -48,6 +48,9 @@ exit 0 if $changed_lines.empty?
 report = `phpcs --report=csv --standard=#{$standard} #{$changed_lines.keys.join ' '}`
 puts "calling `phpcs --report=csv --standard=#{$standard} #{$changed_lines.keys.join ' '}`" if $debug
 errors = false
+
+# substitue \" for "". Ruby csv sucks
+report.gsub!('\\"', '""')
 CSV.parse(report).drop(1).each do |row|
     file    = File.expand_path row[0]
     line    = row[1].to_i
