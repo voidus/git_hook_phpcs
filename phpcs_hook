@@ -2,11 +2,13 @@
 # Created by Simon Kohlmeyer <simon.kohlmeyer@googlemail.com> in 2011
 # Public domain
 
-$standard="Zend"
+$default_standard="Zend"
 $debug = false
 
 ################################################
 require "csv"
+
+$standard = ARGV.empty? ? $default_standard : ARGV[0]
 
 $changed_lines = {}
 $relative_names = {}
